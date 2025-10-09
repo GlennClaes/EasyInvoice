@@ -2,9 +2,12 @@ package be.glennclaes.easyinvoice.controller;
 
 import be.glennclaes.easyinvoice.io.AuthRequest;
 import be.glennclaes.easyinvoice.io.AuthResponse;
+import be.glennclaes.easyinvoice.io.ResetPasswordRequest;
 import be.glennclaes.easyinvoice.service.AppUserDetailsService;
+import be.glennclaes.easyinvoice.service.ProfileService;
 import be.glennclaes.easyinvoice.util.JwtUtil;
 import io.jsonwebtoken.Jwt;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,10 +20,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -33,12 +34,13 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final AppUserDetailsService appUserDetailsService;
     private final JwtUtil jwtUtil;
+    private final ProfileService profileService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
             authenticate(request.getEmail(), request.getPassword());
-            final UserDetails userDetails =  appUserDetailsService.loadUserByUsername(request.getEmail());
+            final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
             final String jwtToken = jwtUtil.generateToken(userDetails);
             ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken)
                     .httpOnly(true)
@@ -70,7 +72,48 @@ public class AuthController {
     }
 
     @GetMapping("/is-authenticated")
-    public ResponseEntity<Boolean> isAuthenticated(@CurrentSecurityContext(expression = "authentication?.name") String email){
+    public ResponseEntity<Boolean> isAuthenticated(@CurrentSecurityContext(expression = "authentication?.name") String email) {
         return ResponseEntity.ok(email != null);
+    }
+
+    @PostMapping("/send-reset-otp")
+    public void sendResetOtp(@RequestParam String email) {
+        try {
+            profileService.sendResetOtp(email);
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            profileService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+    }
+
+    @PostMapping("/send-otp")
+    public void sendVerifyOtp(@CurrentSecurityContext(expression = "authentication?.name") String email) {
+        try {
+            profileService.sendOtp(email);
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public void verifyEmail(@RequestBody Map<String, Object> request, @CurrentSecurityContext(expression = "authentication?.name") String email) {
+        if (request.get("otp").toString() == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing details");
+        }
+
+
+        try {
+            profileService.verifyOtp(email, request.get("otp").toString());
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
     }
 }
