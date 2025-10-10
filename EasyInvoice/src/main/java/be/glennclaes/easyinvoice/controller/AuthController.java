@@ -7,6 +7,7 @@ import be.glennclaes.easyinvoice.service.AppUserDetailsService;
 import be.glennclaes.easyinvoice.service.ProfileService;
 import be.glennclaes.easyinvoice.util.JwtUtil;
 import io.jsonwebtoken.Jwt;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -115,5 +116,20 @@ public class AuthController {
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         }
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response){
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(false)//prod true
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body("Logged out succesfuly");
+
     }
 }
