@@ -6,6 +6,7 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean package -DskipTests -Dmaven.compiler.release=17
 
+
 # Stage 2: Run app
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app

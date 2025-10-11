@@ -6,14 +6,14 @@ services:
     container_name: easyinvoice-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      MYSQL_DATABASE: easyinvoice
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
       - "3307:3306"
     volumes:
       - db-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${SPRING_DATASOURCE_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
       retries: 10
       timeout: 5s
@@ -21,6 +21,7 @@ services:
   backend:
     build:
       context: ./EasyInvoice
+    container_name: easyinvoice-backend
     ports:
       - "${SERVER_PORT}:8081"
     environment:
@@ -46,6 +47,7 @@ services:
   frontend:
     build:
       context: ./client
+    container_name: easyinvoice-frontend
     ports:
       - "3000:80"
     depends_on:
