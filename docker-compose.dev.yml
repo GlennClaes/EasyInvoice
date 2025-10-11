@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: easyinvoice-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      MYSQL_DATABASE: easyinvoice
+    ports:
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${SPRING_DATASOURCE_PASSWORD}"]
+      interval: 5s
+      retries: 10
+      timeout: 5s
+
+  backend:
+    build:
+      context: ./EasyInvoice
+    ports:
+      - "${SERVER_PORT}:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      SERVER_PORT: ${SERVER_PORT}
+      SERVER_CONTEXT_PATH: ${SERVER_CONTEXT_PATH}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLED: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLED}
+      SPRING_MAIL_PROTOCOL: ${SPRING_MAIL_PROTOCOL}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_FROM: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_FROM}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./client
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      CHOKIDAR_USEPOLLING: true
+
+volumes:
+  db-data:
