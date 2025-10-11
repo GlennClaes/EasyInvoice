@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f4f4;">
+    <tr>
+        <td align="center" style="padding: 50px 0;">
+            <table width="600" border="0" cellspacing="0" cellpadding="0" style="background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <tr>
+                    <td align="center" style="background-color: #0d6efd; color: white; padding: 25px;">
+                        <h2 style="margin: 0; font-size: 24px;">Verify Your Email</h2>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="padding: 30px;">
+                        <p style="color: #555;">Hello,</p>
+                        <p style="color: #555;">Thank you for signing up! Use the One-Time Passcode (OTP) below to verify your email address:</p>
+                        <p style="margin: 30px 0; font-size: 36px; font-weight: bold; color: #0d6efd; letter-spacing: 0.2em; border: 2px dashed #ddd; padding: 10px 0; display: inline-block;">
+                            [[${otp_code}]]
+                        </p>
+                        <p style="color: #555;">For security, this code is only valid for a few minutes.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="background-color: #fafafa; font-size: 12px; color: #777; padding: 15px 20px; border-top: 1px solid #eee;">
+                        <p style="margin: 0;">If you didn’t sign up, you can safely ignore this email.</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
