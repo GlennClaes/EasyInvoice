@@ -21,7 +21,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -p$tempPassword123"
+          --health-cmd="mysqladmin ping -h mysql -p$tempPassword123"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -41,7 +41,7 @@ jobs:
 
       - name: Set environment variables from secrets
         run: |
-          echo "SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/easyinvoice" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/easyinvoice" >> $GITHUB_ENV
           echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> $GITHUB_ENV
           echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> $GITHUB_ENV
           echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> $GITHUB_ENV
@@ -50,7 +50,19 @@ jobs:
           echo "SPRING_MAIL_USERNAME=${{ secrets.SPRING_MAIL_USERNAME }}" >> $GITHUB_ENV
           echo "SPRING_MAIL_PASSWORD=${{ secrets.SPRING_MAIL_PASSWORD }}" >> $GITHUB_ENV
 
+      - name: Wait for MySQL
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..30}; do
+            if mysql -h mysql -u root -ptempPassword123 -e "SELECT 1"; then
+              echo "MySQL ready!"
+              break
+            fi
+            sleep 2
+          done
+
       - name: Build and test
         run: |
           cd EasyInvoice
+          chmod +x mvnw
           if [ -f ./mvnw ]; then ./mvnw clean test; else mvn clean test; fi
