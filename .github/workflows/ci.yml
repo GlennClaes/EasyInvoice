@@ -41,7 +41,7 @@ jobs:
 
       - name: Set environment variables from secrets
         run: |
-          echo "SPRING_DATASOURCE_URL=jdbc:mysql://127.0.0.1:3306/easyinvoice" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/easyinvoice" >> $GITHUB_ENV
           echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> $GITHUB_ENV
           echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> $GITHUB_ENV
           echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> $GITHUB_ENV
