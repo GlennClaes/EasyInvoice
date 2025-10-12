@@ -16,14 +16,14 @@ jobs:
       mysql:
         image: mysql:8
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: tempPassword123  # tijdelijk wachtwoord voor CI
           MYSQL_DATABASE: easyinvoice
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -p${{ secrets.SPRING_DATASOURCE_PASSWORD }}" 
-          --health-interval=10s 
-          --health-timeout=5s 
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -p$tempPassword123"
+          --health-interval=10s
+          --health-timeout=5s
           --health-retries=5
 
     steps:
@@ -48,4 +48,5 @@ jobs:
           echo "SPRING_MAIL_PASSWORD=${{ secrets.SPRING_MAIL_PASSWORD }}" >> $GITHUB_ENV
 
       - name: Build and test
-        run: ./mvnw clean test || mvn clean test
+        run: |
+          if [ -f ./mvnw ]; then ./mvnw clean test; else mvn clean test; fi

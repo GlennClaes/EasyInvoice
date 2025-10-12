@@ -32,7 +32,8 @@ jobs:
           echo "SERVER_PORT=8081" >> $GITHUB_ENV
 
       - name: Build application
-        run: ./mvnw clean package -DskipTests || mvn clean package -DskipTests
+        run: |
+          if [ -f ./mvnw ]; then ./mvnw clean package -DskipTests; else mvn clean package -DskipTests; fi
 
       - name: Copy artifact to server
         uses: appleboy/scp-action@v0.1.2
