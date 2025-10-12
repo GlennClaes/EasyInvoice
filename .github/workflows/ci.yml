@@ -21,7 +21,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -p$tempPassword123"
+          --health-cmd="mysqladmin ping -h localhost -p$tempPassword123"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -41,7 +41,7 @@ jobs:
 
       - name: Set environment variables from secrets
         run: |
-          echo "SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/easyinvoice" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/easyinvoice" >> $GITHUB_ENV
           echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> $GITHUB_ENV
           echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> $GITHUB_ENV
           echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> $GITHUB_ENV
