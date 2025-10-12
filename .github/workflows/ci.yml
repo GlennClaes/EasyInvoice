@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - '**'  # alle branches
+      - '**'
   pull_request:
     branches:
       - '**'
@@ -21,10 +21,10 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h mysql -p$tempPassword123"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -ptempPassword123"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
 
     steps:
       - name: Checkout repository
@@ -50,13 +50,18 @@ jobs:
           echo "SPRING_MAIL_USERNAME=${{ secrets.SPRING_MAIL_USERNAME }}" >> $GITHUB_ENV
           echo "SPRING_MAIL_PASSWORD=${{ secrets.SPRING_MAIL_PASSWORD }}" >> $GITHUB_ENV
 
-      - name: Wait for MySQL
+      - name: Wait for MySQL TCP Port
         run: |
-          echo "Waiting for MySQL to be ready..."
+          echo "Wachten tot MySQL poort 3306 bereikbaar is..."
+          sudo apt-get update && sudo apt-get install -y netcat-openbsd
           for i in {1..30}; do
-            if mysql -h mysql -u root -ptempPassword123 -e "SELECT 1"; then
-              echo "MySQL ready!"
+            if nc -zv mysql 3306 2>&1 | grep -q 'succeeded'; then
+              echo "MySQL klaar!"
               break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Fout: MySQL-poort 3306 is na 60 seconden niet geopend."
+              exit 1
             fi
             sleep 2
           done
@@ -64,5 +69,4 @@ jobs:
       - name: Build and test
         run: |
           cd EasyInvoice
-          chmod +x mvnw
           if [ -f ./mvnw ]; then ./mvnw clean test; else mvn clean test; fi
