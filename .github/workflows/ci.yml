@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - '**'
+      - '**'  # alle branches
   pull_request:
     branches:
       - '**'
@@ -29,6 +29,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Set executable permission for mvnw
+        run: chmod +x EasyInvoice/mvnw
 
       - name: Set up Java
         uses: actions/setup-java@v3
