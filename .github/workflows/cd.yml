@@ -1,9 +1,9 @@
-name: CD - EasyInvoice
+name: CD
 
 on:
   push:
     branches:
-      - main
+      - main  # alleen deployen vanaf main
 
 jobs:
   deploy:
@@ -32,7 +32,7 @@ jobs:
           echo "SERVER_PORT=8081" >> $GITHUB_ENV
 
       - name: Build application
-        run: ./mvnw clean package -DskipTests
+        run: ./mvnw clean package -DskipTests || mvn clean package -DskipTests
 
       - name: Copy artifact to server
         uses: appleboy/scp-action@v0.1.2

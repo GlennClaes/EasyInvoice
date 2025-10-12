@@ -1,4 +1,4 @@
-name: CI - EasyInvoice
+name: CI
 
 on:
   push:
@@ -48,4 +48,4 @@ jobs:
           echo "SPRING_MAIL_PASSWORD=${{ secrets.SPRING_MAIL_PASSWORD }}" >> $GITHUB_ENV
 
       - name: Build and test
-        run: ./mvnw clean test
+        run: ./mvnw clean test || mvn clean test
