@@ -49,4 +49,5 @@ jobs:
 
       - name: Build and test
         run: |
+          cd EasyInvoice/EasyInvoice/EasyInvoice
           if [ -f ./mvnw ]; then ./mvnw clean test; else mvn clean test; fi
