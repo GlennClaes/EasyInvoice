@@ -33,7 +33,7 @@ jobs:
 
       - name: Build application
         run: |
-          cd EasyInvoice/EasyInvoice/EasyInvoice
+          cd EasyInvoice
           if [ -f ./mvnw ]; then ./mvnw clean package -DskipTests; else mvn clean package -DskipTests; fi
 
       - name: Copy artifact to server
