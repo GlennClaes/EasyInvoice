@@ -1,0 +1,54 @@
+name: CD - EasyInvoice
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set environment variables from secrets
+        run: |
+          echo "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> $GITHUB_ENV
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> $GITHUB_ENV
+          echo "SPRING_MAIL_HOST=${{ secrets.SPRING_MAIL_HOST }}" >> $GITHUB_ENV
+          echo "SPRING_MAIL_PORT=${{ secrets.SPRING_MAIL_PORT }}" >> $GITHUB_ENV
+          echo "SPRING_MAIL_USERNAME=${{ secrets.SPRING_MAIL_USERNAME }}" >> $GITHUB_ENV
+          echo "SPRING_MAIL_PASSWORD=${{ secrets.SPRING_MAIL_PASSWORD }}" >> $GITHUB_ENV
+          echo "SERVER_PORT=8081" >> $GITHUB_ENV
+
+      - name: Build application
+        run: ./mvnw clean package -DskipTests
+
+      - name: Copy artifact to server
+        uses: appleboy/scp-action@v0.1.2
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          source: "target/*.jar"
+          target: "/home/${{ secrets.PROD_USER }}/app/"
+
+      - name: Restart service on server
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            pkill -f 'java -jar' || true
+            nohup java -jar /home/${{ secrets.PROD_USER }}/app/*.jar > /dev/null 2>&1 &
